@@ -66,7 +66,13 @@ def user_control():
         else:
             table.stop(HOLD)
         
-        if abs(controller.axis3.position()) > 1 and abs(controller.axis1.position()) > 1 and abs(controller.axis4.position()) > 1:
+        if abs(controller.axis2.position()) > 1:
+            belt()
+        else:
+            belt1.stop(HOLD)
+            belt2.stop(HOLD)
+
+        if abs(controller.axis3.position()) > 1 or abs(controller.axis1.position()) > 1 or abs(controller.axis4.position()) > 1:
             drive_FB()
             drive_LR()
             drive_rot()

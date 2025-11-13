@@ -9,8 +9,8 @@ def curve(x):
 def drive_FB():
     LF.spin(FORWARD, curve(controller.axis3.position()))
     LB.spin(FORWARD, curve(controller.axis3.position()))
-    RF.spin(FORWARD, curve(controller.axis3.position()))
-    RB.spin(FORWARD, curve(controller.axis3.position()))
+    RF.spin(FORWARD, -curve(controller.axis3.position()))
+    RB.spin(FORWARD, -curve(controller.axis3.position()))
     wait(25, MSEC)
 
 def drive_LR(): # test to make sure it isnt inversed. pos should be right & neg should be left
@@ -26,21 +26,15 @@ def drive_rot(): #turn left -> all axis values neg, turn right -> all axis value
     RF.spin(FORWARD, curve(controller.axis1.position()))
     RB.spin(FORWARD, curve(controller.axis1.position()))
 
+def belt():
+    belt1.spin(FORWARD, curve(controller.axis2.position()))
+    belt2.spin(FORWARD, -curve(controller.axis2.position()))
+
 def brake(type):
     LF.stop(type)
     LB.stop(type)
     RF.stop(type)
     RB.stop(type)
-
-def all_brake():
-    LF.stop(COAST)
-    LB.stop(COAST)
-    RF.stop(COAST)
-    RB.stop(COAST)
-    pivot.stop(HOLD)
-    table.stop(HOLD)
-    belt1.stop(HOLD)
-    belt2.stop(HOLD)
 
 def drive_auto(d): #distance in inches
     wheel_circ = 10.2101761 #3.25" diameter wheel
