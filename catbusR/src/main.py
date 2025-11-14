@@ -38,24 +38,22 @@ def drive_FB(spd):
     LB.spin(FORWARD, curve(spd))
     RF.spin(FORWARD, -curve(spd))
     RB.spin(FORWARD, -curve(spd))
-    wait(25, MSEC)
 
 def drive_LR(spd): # test to make sure it isnt inversed. pos should be right & neg should be left
     LF.spin(FORWARD, curve(spd))
     LB.spin(FORWARD, -curve(spd))
     RF.spin(FORWARD, curve(spd))
     RB.spin(FORWARD, -curve(spd))
-    wait(25, MSEC)
 
-def drive_rot(): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, curve(controller.axis1.position()))
-    LB.spin(FORWARD, curve(controller.axis1.position()))
-    RF.spin(FORWARD, curve(controller.axis1.position()))
-    RB.spin(FORWARD, curve(controller.axis1.position()))
+def drive_rot(spd): #turn left -> all axis values neg, turn right -> all axis values pos
+    LF.spin(FORWARD, curve(spd))
+    LB.spin(FORWARD, curve(spd))
+    RF.spin(FORWARD, curve(spd))
+    RB.spin(FORWARD, curve(spd))
 
-def belt():
-    belt1.spin(FORWARD, curve(controller.axis2.position()))
-    belt2.spin(FORWARD, -curve(controller.axis2.position()))
+def belt(spd):
+    belt1.spin(FORWARD, curve(spd))
+    belt2.spin(FORWARD, -curve(spd))
 
 def brake(type):
     LF.stop(type)
@@ -156,28 +154,26 @@ def user_control():
         else:
             table.stop(HOLD)
 
-        ax1 = abs(controller.axis1.position())
-        ax2 = abs(controller.axis2.position())
-        ax3 = abs(controller.axis3.position())
-        ax4 = abs(controller.axis4.position())
+        ax1 = controller.axis1.position()
+        ax2 = controller.axis2.position()
+        ax3 = controller.axis3.position()
+        ax4 = controller.axis4.position()
         # oh my god the joystick value can change during the time it takes for vs to
         # read the next line right under it thats nuts
         # maintain the joystick value w/ these variables to prevent divide by zero excp.
 
-        if abs(controller.axis2.position()) > 1:
-            belt()
+        if abs(ax2) > 1:
+            belt(ax2)
         else:
             belt1.stop(HOLD)
             belt2.stop(HOLD)
 
-        if ax3 > 1:
+        if abs(ax3) > 1:
             drive_FB(ax3)
-            print(ax3)
-        if ax4 > 1:
+        if abs(ax4) > 1:
             drive_LR(ax4)
-            print(ax4)
-        if ax1 > 1:
-            drive_rot()
+        if abs(ax1) > 1:
+            drive_rot(ax1)
         else:
             brake(COAST)
         wait(20, MSEC)
