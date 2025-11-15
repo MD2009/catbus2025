@@ -170,12 +170,12 @@ def user_control():
 
         if abs(ax3) > 1:
             drive_FB(ax3)
-        if abs(ax4) > 1:
+        elif abs(ax4) > 1:
             drive_LR(ax4)
-        if abs(ax1) > 1:
+        elif abs(ax1) > 1:
             drive_rot(ax1)
         else:
-            brake(COAST)
+            brake(HOLD)
         wait(20, MSEC)
 
 
