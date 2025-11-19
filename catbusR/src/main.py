@@ -17,15 +17,15 @@ from vex import *
 brain = Brain()
 controller = Controller(PRIMARY)
 
-belt1 = Motor(Ports.PORT13)
-belt2 = Motor(Ports.PORT14)
-pivot = Motor(Ports.PORT15)
-table = Motor(Ports.PORT18)
+belt1 = Motor(Ports.PORT18)
+belt2 = Motor(Ports.PORT20)
+pivot = Motor(Ports.PORT16)
+table = Motor(Ports.PORT15)
 
-RF = Motor(Ports.PORT19)
-RB = Motor(Ports.PORT12)
-LF = Motor(Ports.PORT20)
-LB = Motor(Ports.PORT11)
+RF = Motor(Ports.PORT13)
+RB = Motor(Ports.PORT17)
+LF = Motor(Ports.PORT12)
+LB = Motor(Ports.PORT19)
 
 # driver
 switch_cnt = 0
@@ -34,26 +34,26 @@ def curve(x):
     return pow(x, 2)/100 * (x/abs(x))
 
 def drive_FB(spd):
-    LF.spin(FORWARD, curve(spd))
-    LB.spin(FORWARD, curve(spd))
-    RF.spin(FORWARD, -curve(spd))
-    RB.spin(FORWARD, -curve(spd))
+    LF.spin(FORWARD, spd)
+    LB.spin(FORWARD, spd)
+    RF.spin(FORWARD, -spd)
+    RB.spin(FORWARD, -spd)
 
 def drive_LR(spd): # test to make sure it isnt inversed. pos should be right & neg should be left
-    LF.spin(FORWARD, curve(spd))
-    LB.spin(FORWARD, -curve(spd))
-    RF.spin(FORWARD, curve(spd))
-    RB.spin(FORWARD, -curve(spd))
+    LF.spin(FORWARD, spd)
+    LB.spin(FORWARD, -spd)
+    RF.spin(FORWARD, spd)
+    RB.spin(FORWARD, -spd)
 
 def drive_rot(spd): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, curve(spd))
-    LB.spin(FORWARD, curve(spd))
-    RF.spin(FORWARD, curve(spd))
-    RB.spin(FORWARD, curve(spd))
+    LF.spin(FORWARD, spd)
+    LB.spin(FORWARD, spd)
+    RF.spin(FORWARD, spd)
+    RB.spin(FORWARD, spd)
 
 def belt(spd):
-    belt1.spin(FORWARD, curve(spd))
-    belt2.spin(FORWARD, -curve(spd))
+    belt1.spin(FORWARD, spd)
+    belt2.spin(FORWARD, -spd)
 
 def brake(type):
     LF.stop(type)
@@ -90,6 +90,7 @@ def switch(n):
 
 def manual_reset(): # lack of sensors :/
     # manually return to neutral position then activate
+    controller.rumble('_')
     pivot.stop(HOLD)
     table.stop(HOLD)
     pivot.reset_position()
@@ -131,26 +132,20 @@ def user_control():
             manual_reset()
         if table.position() > 20:
             controller.rumble('..')
-            while table.position() > 20: # def needs testing i doubt itll be this accurate
-                table.spin(FORWARD, -20)
-            table.stop(HOLD)
         elif table.position() < -275:
             controller.rumble('..')
-            while table.position() < -275:
-                table.spin(FORWARD, 20)
-            table.stop(HOLD)
 
         # manual adjust
         if controller.buttonL1.pressing():
-            pivot.spin(FORWARD, 25) # test to adjust rpm values
+            pivot.spin(FORWARD, 10) # test to adjust rpm values
         elif controller.buttonR1.pressing():
-            pivot.spin(FORWARD, -25)
+            pivot.spin(FORWARD, -10)
         else:
             pivot.stop(HOLD)
         if controller.buttonL2.pressing():
-            table.spin(FORWARD, 25)
+            table.spin(FORWARD, 10)
         elif controller.buttonR2.pressing():
-            table.spin(FORWARD, -25)
+            table.spin(FORWARD, -10)
         else:
             table.stop(HOLD)
 
@@ -175,7 +170,7 @@ def user_control():
         elif abs(ax1) > 1:
             drive_rot(ax1)
         else:
-            brake(HOLD)
+            brake(BRAKE)
         wait(20, MSEC)
 
 
