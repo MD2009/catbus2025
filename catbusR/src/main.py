@@ -34,22 +34,22 @@ def curve(x):
     return pow(x, 2)/100 * (x/abs(x))
 
 def drive_FB(spd):
-    LF.spin(FORWARD, spd)
-    LB.spin(FORWARD, spd)
-    RF.spin(FORWARD, -spd)
-    RB.spin(FORWARD, -spd)
-
-def drive_LR(spd): # test to make sure it isnt inversed. pos should be right & neg should be left
-    LF.spin(FORWARD, spd)
+    LF.spin(FORWARD, -spd)
     LB.spin(FORWARD, -spd)
     RF.spin(FORWARD, spd)
-    RB.spin(FORWARD, -spd)
+    RB.spin(FORWARD, spd)
+
+def drive_LR(spd): # test to make sure it isnt inversed. pos should be right & neg should be left
+    LF.spin(FORWARD, -spd)
+    LB.spin(FORWARD, spd)
+    RF.spin(FORWARD, -spd)
+    RB.spin(FORWARD, spd)
 
 def drive_rot(spd): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, spd)
-    LB.spin(FORWARD, spd)
-    RF.spin(FORWARD, spd)
-    RB.spin(FORWARD, spd)
+    LF.spin(FORWARD, -spd)
+    LB.spin(FORWARD, -spd)
+    RF.spin(FORWARD, -spd)
+    RB.spin(FORWARD, -spd)
 
 def belt(spd):
     belt1.spin(FORWARD, spd)
@@ -122,10 +122,10 @@ def user_control():
     # place driver control in this while loop
     while True:
         # action hotkeys
-        if controller.buttonX.pressing():
-            switch("dock")
-        if controller.buttonA.pressing():
-            switch("end")
+        # if controller.buttonX.pressing():
+        #     switch("dock")
+        # if controller.buttonA.pressing():
+        #     switch("end")
 
         # control
         if controller.buttonUp.pressing():
