@@ -17,15 +17,15 @@ from vex import *
 brain = Brain()
 controller = Controller(PRIMARY)
 
-belt1 = Motor(Ports.PORT18)
-belt2 = Motor(Ports.PORT20)
-pivot = Motor(Ports.PORT16)
-table = Motor(Ports.PORT15)
+belt1 = Motor(Ports.PORT9)
+belt2 = Motor(Ports.PORT10)
+pivot = Motor(Ports.PORT8)
+table = Motor(Ports.PORT7)
 
-RF = Motor(Ports.PORT13)
-RB = Motor(Ports.PORT17)
-LF = Motor(Ports.PORT12)
-LB = Motor(Ports.PORT19)
+RF = Motor(Ports.PORT19)
+RB = Motor(Ports.PORT6)
+LF = Motor(Ports.PORT18)
+LB = Motor(Ports.PORT5)
 
 # driver
 switch_cnt = 0
