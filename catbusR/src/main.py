@@ -69,6 +69,21 @@ def drive_auto(d): #distance in inches
     LF.spin_for(FORWARD, -rev)
     LB.spin_for(FORWARD, -rev)
 
+def spin_to(motor, deg):
+    dif = deg-motor.position()
+    t = 0
+    motor.spin_for(FORWARD, dif, DEGREES, 15, RPM, True)
+    while math.fabs(dif) > 10 and t < 1:
+        if motor.position() > deg:
+            motor.spin_for(FORWARD, dif*0.5, 15, RPM, True)
+        elif motor.position() < deg:
+            motor.spin_for(FORWARD, dif*0.5, DEGREES, 15, RPM, True)
+        wait(50, MSEC)
+        t+=0.05
+        print(motor.position())
+    motor.stop(HOLD)
+    print("finished")
+
 def switch(n):
     global switch_cnt
     switch_cnt += 1
@@ -76,15 +91,19 @@ def switch(n):
         coef = 1
     else:
         coef = -1
-    # full rotation = 90, half = 60
-    pivot.spin_to_position(60, DEGREES, False) #false = do not wait for completion
-    table.spin_for(FORWARD, coef*252)
+    # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
+    print(coef)
+    pivot.spin_to_position(-90, DEGREES, True) #false = do not wait for completion
+    # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
+    table.spin_to_position(coef*240, DEGREES, True)
     if n == "dock":
-        pivot.spin_to_position(90, DEGREES, False)
-        pivot.reset_position()
+        pivot.spin_to_position(180*coef, DEGREES, True)
+        # spin_to(pivot, 180) 
     elif n == "end":
-        pivot.spin_to_position(0, DEGREES, False)
+        pivot.spin_to_position(0, DEGREES, True)
+        # spin_to(pivot, 0)
     pivot.reset_position()
+    table.reset_position()
     # pivot.stop(HOLD)
     # do i need this
 
@@ -122,30 +141,32 @@ def user_control():
     # place driver control in this while loop
     while True:
         # action hotkeys
-        # if controller.buttonX.pressing():
-        #     switch("dock")
-        # if controller.buttonA.pressing():
-        #     switch("end")
+        if controller.buttonX.pressing():
+            switch("dock")
+        if controller.buttonA.pressing():
+            switch("end")
 
         # control
         if controller.buttonUp.pressing():
             manual_reset()
-        if table.position() > 20:
-            controller.rumble('..')
-        elif table.position() < -275:
-            controller.rumble('..')
+        if table.position() < -20:
+            controller.rumble('__')
+        elif table.position() > 275:
+            controller.rumble('__')
 
         # manual adjust
         if controller.buttonL1.pressing():
-            pivot.spin(FORWARD, 10) # test to adjust rpm values
-        elif controller.buttonR1.pressing():
-            pivot.spin(FORWARD, -10)
+            pivot.spin(FORWARD, 15)
+            print(pivot.power())
+        elif controller.buttonL2.pressing():
+            pivot.spin(FORWARD, -15)
+            print(pivot.power())
         else:
             pivot.stop(HOLD)
-        if controller.buttonL2.pressing():
-            table.spin(FORWARD, 10)
+        if controller.buttonR1.pressing():
+            table.spin(FORWARD, 15)
         elif controller.buttonR2.pressing():
-            table.spin(FORWARD, -10)
+            table.spin(FORWARD, -15)
         else:
             table.stop(HOLD)
 
@@ -153,9 +174,6 @@ def user_control():
         ax2 = controller.axis2.position()
         ax3 = controller.axis3.position()
         ax4 = controller.axis4.position()
-        # oh my god the joystick value can change during the time it takes for vs to
-        # read the next line right under it thats nuts
-        # maintain the joystick value w/ these variables to prevent divide by zero excp.
 
         if abs(ax2) > 1:
             belt(ax2)
