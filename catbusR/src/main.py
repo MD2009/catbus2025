@@ -72,12 +72,12 @@ def drive_auto(d): #distance in inches
 def spin_to(motor, deg):
     dif = deg-motor.position()
     t = 0
-    motor.spin_for(FORWARD, dif, DEGREES, 15, RPM, True)
-    while math.fabs(dif) > 10 and t < 1:
+    motor.spin_for(FORWARD, dif, DEGREES, 20, RPM, True)
+    while math.fabs(dif) > 5 and t < 0.6:
         if motor.position() > deg:
-            motor.spin_for(FORWARD, -dif*0.5, DEGREES, 5, RPM, False)
+            motor.spin_for(FORWARD, -dif*0.5, DEGREES, 20, RPM, False)
         elif motor.position() < deg:
-            motor.spin_for(FORWARD, dif*0.5, DEGREES, 5, RPM, False)
+            motor.spin_for(FORWARD, dif*0.5, DEGREES, 20, RPM, False)
         wait(50, MSEC)
         t+=0.05
         print(dif)
@@ -92,17 +92,23 @@ def switch(n):
     else:
         coef = -1
     # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
-    print(coef)
-    pivot.spin_to_position(90*coef, DEGREES, True) #false = do not wait for completion
-    # spin_to(pivot, coef*90) #starting pos must be w brain on right side & pivot motor on right side
-    table.spin_to_position(coef*240, DEGREES, True)
+    pivot.spin_to_position(-90, DEGREES, 40, RPM, True) #false = do not wait for completion
+    # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
+    table.spin_to_position(coef*240, DEGREES, 50, RPM, True) #has to be a bit higher RPM than others
     if n == "dock":
-        pivot.spin_to_position(180*coef, DEGREES, True)
-        # spin_to(pivot, 180*coef) 
+        if coef == 1:
+            pivot.spin_to_position(0, DEGREES, 40, RPM, True) # spin to position doesnt time out ._.
+            # spin_to(pivot, 0)
+        else:
+            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
+            # spin_to(pivot, -180) 
     elif n == "end":
-        pivot.spin_to_position(0, DEGREES, True)
-        # spin_to(pivot, 0)
-    pivot.reset_position()
+        if coef == 1:
+            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
+            # spin_to(pivot, -180)
+        else:
+            pivot.spin_to_position(0, DEGREES, 40, RPM, True)
+            # spin_to(pivot, 0)
     table.reset_position()
     # pivot.stop(HOLD)
     # do i need this
