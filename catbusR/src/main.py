@@ -75,12 +75,12 @@ def spin_to(motor, deg):
     motor.spin_for(FORWARD, dif, DEGREES, 15, RPM, True)
     while math.fabs(dif) > 10 and t < 1:
         if motor.position() > deg:
-            motor.spin_for(FORWARD, dif*0.5, 15, RPM, True)
+            motor.spin_for(FORWARD, -dif*0.5, DEGREES, 5, RPM, False)
         elif motor.position() < deg:
-            motor.spin_for(FORWARD, dif*0.5, DEGREES, 15, RPM, True)
+            motor.spin_for(FORWARD, dif*0.5, DEGREES, 5, RPM, False)
         wait(50, MSEC)
         t+=0.05
-        print(motor.position())
+        print(dif)
     motor.stop(HOLD)
     print("finished")
 
@@ -93,12 +93,12 @@ def switch(n):
         coef = -1
     # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
     print(coef)
-    pivot.spin_to_position(-90, DEGREES, True) #false = do not wait for completion
-    # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
+    pivot.spin_to_position(90*coef, DEGREES, True) #false = do not wait for completion
+    # spin_to(pivot, coef*90) #starting pos must be w brain on right side & pivot motor on right side
     table.spin_to_position(coef*240, DEGREES, True)
     if n == "dock":
         pivot.spin_to_position(180*coef, DEGREES, True)
-        # spin_to(pivot, 180) 
+        # spin_to(pivot, 180*coef) 
     elif n == "end":
         pivot.spin_to_position(0, DEGREES, True)
         # spin_to(pivot, 0)
