@@ -33,23 +33,23 @@ switch_cnt = 0
 def curve(x):
     return pow(x, 2)/100 * (x/abs(x))
 
-def drive_FB(spd):
-    LF.spin(FORWARD, -spd)
-    LB.spin(FORWARD, -spd)
-    RF.spin(FORWARD, spd)
-    RB.spin(FORWARD, spd)
+def drive_FB(spd, type = RPM):
+    LF.spin(FORWARD, -spd, type)
+    LB.spin(FORWARD, -spd, type)
+    RF.spin(FORWARD, spd, type)
+    RB.spin(FORWARD, spd, type)
 
-def drive_LR(spd): # test to make sure it isnt inversed. pos should be right & neg should be left
-    LF.spin(FORWARD, -spd)
-    LB.spin(FORWARD, spd)
-    RF.spin(FORWARD, -spd)
-    RB.spin(FORWARD, spd)
+def drive_LR(spd, type = RPM): # test to make sure it isnt inversed. pos should be right & neg should be left
+    LF.spin(FORWARD, -spd, type)
+    LB.spin(FORWARD, spd, type)
+    RF.spin(FORWARD, -spd, type)
+    RB.spin(FORWARD, spd, type)
 
-def drive_rot(spd): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, -spd)
-    LB.spin(FORWARD, -spd)
-    RF.spin(FORWARD, -spd)
-    RB.spin(FORWARD, -spd)
+def drive_rot(spd, type = RPM): #turn left -> all axis values neg, turn right -> all axis values pos
+    LF.spin(FORWARD, -spd, type)
+    LB.spin(FORWARD, -spd, type)
+    RF.spin(FORWARD, -spd, type)
+    RB.spin(FORWARD, -spd, type)
 
 def belt(spd):
     belt1.spin(FORWARD, spd)
@@ -61,28 +61,48 @@ def brake(type):
     RF.stop(type)
     RB.stop(type)
 
-def drive_auto(d): #distance in inches
-    wheel_circ = 10.2101761 #3.25" diameter wheel
-    rev = 360*(d/wheel_circ)
-    LF.spin_for(FORWARD, rev)
-    LB.spin_for(FORWARD, rev)
-    LF.spin_for(FORWARD, -rev)
-    LB.spin_for(FORWARD, -rev)
+def drive_auto(dir, dis, spd): # distance in inches
+    if dir == "fb":
+        print("checkpoint2")
+        drive_FB(spd)
+        wait((dis/20)*(math.fabs(spd)/60), SECONDS) # 20" per rev, 1:1 green 4" wheel
+        brake(BRAKE)
+    elif dir == "lr":
+        drive_LR(spd)
+        wait((dis/20)*(math.fabs(spd)/60), SECONDS) 
+        brake(BRAKE)
+    elif dir == "rt":
+        drive_rot(spd)
+        wait((dis/20)*(math.fabs(spd)/60), SECONDS)
+        brake(BRAKE)
 
-def spin_to(motor, deg):
+def spin_to_deg(motor, deg, spd, to = 5, tol = 5):
     dif = deg-motor.position()
     t = 0
-    motor.spin_for(FORWARD, dif, DEGREES, 20, RPM, True)
-    while math.fabs(dif) > 5 and t < 0.6:
+    motor.spin_for(FORWARD, dif, DEGREES, spd, RPM, True)
+    while math.fabs(dif) > tol and t < to:
         if motor.position() > deg:
-            motor.spin_for(FORWARD, -dif*0.5, DEGREES, 20, RPM, False)
+            motor.spin_for(FORWARD, -dif*0.5, DEGREES, spd, RPM, False)
         elif motor.position() < deg:
-            motor.spin_for(FORWARD, dif*0.5, DEGREES, 20, RPM, False)
+            motor.spin_for(FORWARD, dif*0.5, DEGREES, spd, RPM, False)
         wait(50, MSEC)
         t+=0.05
         print(dif)
-    motor.stop(HOLD)
+    motor.stop(BRAKE)
     print("finished")
+
+def spin_to_rev(motor, rev, spd, to = 5, tol = 5):
+    dif = rev-motor.position()
+    t = 0
+    motor.spin(FORWARD, spd)
+    while math.fabs(dif) > tol and t < to:
+        if motor.position() > rev:
+            motor.spin(FORWARD, spd*-dif*0.5, RPM, False)
+        elif motor.position() < rev:
+            motor.spin(FORWARD, spd*dif*0.5, RPM, False)
+        wait(50, MSEC)
+        t+=0.05
+    motor.stop(BRAKE)
 
 def switch(n):
     global switch_cnt
@@ -121,13 +141,14 @@ def manual_reset(): # lack of sensors :/
     pivot.reset_position()
     table.reset_position()
 
-# main
 def autonomous():
     brain.screen.clear_screen()
-    brain.screen.print("autonomous code")
-    # auto.sequence()
-    # place automonous code here
-
+    drive_auto("fb", 12, -75)
+    drive_auto("lr", -18, 75)
+    drive_auto("fb", 10, 75)
+    # belt(100)
+    # drive_auto("fb", -2, 75)
+    # wait(5, SECONDS)    
 
 def device_check():
     if LF.installed() and RF.installed() and LB.installed() and RB.installed():
@@ -138,7 +159,7 @@ def device_check():
 
 def user_control():
     brain.screen.clear_screen()
-    brain.screen.print("driver control")
+    pivot.set_timeout(2, SECONDS)
     device_check()
     ax1 = 0
     ax2 = 0
