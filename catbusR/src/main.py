@@ -68,7 +68,7 @@ def drive_auto(dir, dis, spd): # distance in inches
         drive_LR(spd)
     elif dir == "rt":
         drive_rot(spd)
-    wait((dis/20)*(math.fabs(spd)/60), SECONDS) # 20" per rev, 1:1 green 4" wheel
+    wait((dis/12)*(math.fabs(spd)/60), SECONDS) # 12.6" per rev, 1:1 green 4" wheel
     brake(BRAKE)
     wait(100, MSEC)
 
@@ -140,12 +140,13 @@ def manual_reset(): # lack of sensors :/
 def autonomous():
     brain.screen.clear_screen()
     drive_auto("fb", 12, -75)
-    belt(100)
-    wait()
+    drive_auto("lr", 6, 75)
+    drive_auto("fb", 9, -50)
+    pivot.spin_to_position(-45, DEGREES, 30, RPM, True)
+    belt(-100)
+    wait(2, SECONDS)
     belt1.stop(HOLD)
     belt2.stop(HOLD)
-    drive_auto("fb", -2, 75)
-    belt(100)   
 
 def device_check():
     if LF.installed() and RF.installed() and LB.installed() and RB.installed():
