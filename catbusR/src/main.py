@@ -174,24 +174,24 @@ def user_control():
         # control
         if controller.buttonUp.pressing():
             manual_reset()
-        if table.position() < -20:
-            controller.rumble('__')
-        elif table.position() > 275:
-            controller.rumble('__')
+        if table.position() > 20:
+            controller.rumble('.')
+            print(table.position())
+        elif table.position() < -275:
+            controller.rumble('.')
+            print(table.position())
 
         # manual adjust
         if controller.buttonL1.pressing():
             pivot.spin(FORWARD, 15)
-            print(pivot.power())
         elif controller.buttonL2.pressing():
             pivot.spin(FORWARD, -15)
-            print(pivot.power())
         else:
             pivot.stop(HOLD)
         if controller.buttonR1.pressing():
-            table.spin(FORWARD, 15)
+            table.spin(FORWARD, 25)
         elif controller.buttonR2.pressing():
-            table.spin(FORWARD, -15)
+            table.spin(FORWARD, -25)
         else:
             table.stop(HOLD)
 
