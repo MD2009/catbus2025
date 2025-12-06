@@ -34,22 +34,22 @@ def curve(x):
     return pow(x, 2)/100 * (x/abs(x))
 
 def drive_FB(spd, type = RPM):
-    LF.spin(FORWARD, -spd, type)
-    LB.spin(FORWARD, -spd, type)
-    RF.spin(FORWARD, spd, type)
-    RB.spin(FORWARD, spd, type)
-
-def drive_LR(spd, type = RPM): # test to make sure it isnt inversed. pos should be right & neg should be left
-    LF.spin(FORWARD, -spd, type)
+    LF.spin(FORWARD, spd, type)
     LB.spin(FORWARD, spd, type)
     RF.spin(FORWARD, -spd, type)
-    RB.spin(FORWARD, spd, type)
+    RB.spin(FORWARD, -spd, type)
+
+def drive_LR(spd, type = RPM): # test to make sure it isnt inversed. pos should be right & neg should be left
+    LF.spin(FORWARD, spd, type)
+    LB.spin(FORWARD, -spd, type)
+    RF.spin(FORWARD, spd, type)
+    RB.spin(FORWARD, -spd, type)
 
 def drive_rot(spd, type = RPM): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, -spd, type)
-    LB.spin(FORWARD, -spd, type)
-    RF.spin(FORWARD, -spd, type)
-    RB.spin(FORWARD, -spd, type)
+    LF.spin(FORWARD, spd, type)
+    LB.spin(FORWARD, spd, type)
+    RF.spin(FORWARD, spd, type)
+    RB.spin(FORWARD, spd, type)
 
 def belt(spd):
     belt1.spin(FORWARD, spd)
@@ -140,10 +140,10 @@ def manual_reset(): # lack of sensors :/
 def autonomous():
     brain.screen.clear_screen()
     drive_auto("fb", 12, -75)
-    drive_auto("lr", 6, 75)
+    drive_auto("lr", 18, 75)
     drive_auto("fb", 9, -50)
     pivot.spin_to_position(-45, DEGREES, 30, RPM, True)
-    belt(-100)
+    belt(100)
     wait(2, SECONDS)
     belt1.stop(HOLD)
     belt2.stop(HOLD)
