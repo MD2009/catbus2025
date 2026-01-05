@@ -9,125 +9,9 @@
 
 # Library imports
 from vex import *
-# from driver import *
-# from config import *
-# from auto import *
-
-# config
-brain = Brain()
-controller = Controller(PRIMARY)
-
-belt1 = Motor(Ports.PORT9)
-belt2 = Motor(Ports.PORT10)
-pivot = Motor(Ports.PORT8)
-table = Motor(Ports.PORT7)
-
-RF = Motor(Ports.PORT19)
-RB = Motor(Ports.PORT6)
-LF = Motor(Ports.PORT18)
-LB = Motor(Ports.PORT5)
-
-# driver
-switch_cnt = 0
-
-def curve(x):
-    return pow(x, 2)/100 * (x/abs(x))
-
-def drive_FB(spd, type = RPM):
-    LF.spin(FORWARD, spd, type)
-    LB.spin(FORWARD, spd, type)
-    RF.spin(FORWARD, -spd, type)
-    RB.spin(FORWARD, -spd, type)
-
-def drive_LR(spd, type = RPM): # test to make sure it isnt inversed. pos should be right & neg should be left
-    LF.spin(FORWARD, spd, type)
-    LB.spin(FORWARD, -spd, type)
-    RF.spin(FORWARD, spd, type)
-    RB.spin(FORWARD, -spd, type)
-
-def drive_rot(spd, type = RPM): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, spd, type)
-    LB.spin(FORWARD, spd, type)
-    RF.spin(FORWARD, spd, type)
-    RB.spin(FORWARD, spd, type)
-
-def belt(spd):
-    belt1.spin(FORWARD, spd)
-    belt2.spin(FORWARD, -spd)
-
-def brake(type):
-    LF.stop(type)
-    LB.stop(type)
-    RF.stop(type)
-    RB.stop(type)
-
-def drive_auto(dir, dis, spd): # distance in inches
-    if dir == "fb":
-        drive_FB(spd)
-    elif dir == "lr":
-        drive_LR(spd)
-    elif dir == "rt":
-        drive_rot(spd)
-    wait((dis/12)*(math.fabs(spd)/60), SECONDS) # 12.6" per rev, 1:1 green 4" wheel
-    brake(BRAKE)
-    wait(100, MSEC)
-
-def spin_to_deg(motor, deg, spd, to = 5, tol = 5):
-    dif = deg-motor.position()
-    t = 0
-    motor.spin_for(FORWARD, dif, DEGREES, spd, RPM, True)
-    while math.fabs(dif) > tol and t < to:
-        if motor.position() > deg:
-            motor.spin_for(FORWARD, -dif*0.5, DEGREES, spd, RPM, False)
-        elif motor.position() < deg:
-            motor.spin_for(FORWARD, dif*0.5, DEGREES, spd, RPM, False)
-        wait(50, MSEC)
-        t+=0.05
-        print(dif)
-    motor.stop(BRAKE)
-    print("finished")
-
-def spin_to_rev(motor, rev, spd, to = 5, tol = 5):
-    dif = rev-motor.position()
-    t = 0
-    motor.spin(FORWARD, spd)
-    while math.fabs(dif) > tol and t < to:
-        if motor.position() > rev:
-            motor.spin(FORWARD, spd*-dif*0.5, RPM, False)
-        elif motor.position() < rev:
-            motor.spin(FORWARD, spd*dif*0.5, RPM, False)
-        wait(50, MSEC)
-        t+=0.05
-    motor.stop(BRAKE)
-
-def switch(n):
-    global switch_cnt
-    switch_cnt += 1
-    if switch_cnt//2 == switch_cnt/2:
-        coef = 1
-    else:
-        coef = -1
-    # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
-    pivot.spin_to_position(-90, DEGREES, 40, RPM, True) #false = do not wait for completion
-    # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
-    table.spin_to_position(coef*240, DEGREES, 50, RPM, True) #has to be a bit higher RPM than others
-    if n == "dock":
-        if coef == 1:
-            pivot.spin_to_position(0, DEGREES, 40, RPM, True) # spin to position doesnt time out ._.
-            # spin_to(pivot, 0)
-        else:
-            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
-            # spin_to(pivot, -180) 
-    elif n == "end":
-        if coef == 1:
-            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
-            # spin_to(pivot, -180)
-        else:
-            pivot.spin_to_position(0, DEGREES, 40, RPM, True)
-            # spin_to(pivot, 0)
-    table.reset_position()
-    # pivot.stop(HOLD)
-    # do i need this
+from driver import *
+from config import *
+from auto import *
 
 def manual_reset(): # lack of sensors :/
     # manually return to neutral position then activate
@@ -139,9 +23,7 @@ def manual_reset(): # lack of sensors :/
 
 def autonomous():
     brain.screen.clear_screen()
-    drive_auto("fb", 12, -75)
-    drive_auto("lr", 18, 75)
-    drive_auto("fb", 9, -50)
+
     pivot.spin_to_position(-45, DEGREES, 30, RPM, True)
     belt(100)
     wait(2, SECONDS)
@@ -158,6 +40,7 @@ def device_check():
 def user_control():
     brain.screen.clear_screen()
     pivot.set_timeout(2, SECONDS)
+    inert.calibrate()
     device_check()
     ax1 = 0
     ax2 = 0

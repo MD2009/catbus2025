@@ -12,3 +12,5 @@ RF = Motor(Ports.PORT19)
 RB = Motor(Ports.PORT12)
 LF = Motor(Ports.PORT20)
 LB = Motor(Ports.PORT11)
+
+inert = Inertial(Ports.PORT10)
