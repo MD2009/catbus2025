@@ -13,22 +13,42 @@ from driver import *
 from config import *
 from auto import *
 
-def manual_reset(): # lack of sensors :/
-    # manually return to neutral position then activate
-    controller.rumble('_')
-    pivot.stop(HOLD)
-    table.stop(HOLD)
-    pivot.reset_position()
-    table.reset_position()
-
 def autonomous():
-    brain.screen.clear_screen()
+    auto_drive("lr", -6)
+    belt(70)
+    auto_drive("fb", 48)
+    wait(750, MSEC) # wait for block collection?
+    belt_brake()
 
-    pivot.spin_to_position(-45, DEGREES, 30, RPM, True)
-    belt(100)
+    auto_drive("rot", 45)
+    pivot.spin_to_position(90, 40) #try spin_to_deg?
+    auto_drive("fb", 84)
+    belt(-70)
+    wait(1500, MSEC) #score 2?
+    belt_brake()
+    pivot.spin_to_position(0, 40)
+    auto_drive("fb", 48)
+
+    auto_drive("rot", 0)
+    auto_drive("lr", 54)
+    auto_drive("rot", 315)
+    auto_drive("fb", 84)
+    belt(-70)
+    wait(1500, MSEC) #score 2?
+    belt_brake()
+    auto_drive("fb", 48)
+
+    auto_drive("rot", 0)
+    auto_drive("fb", 36)
+    auto_drive("lr", -102)
+    pivot.spin_to_position(180)
+    auto_drive("fb", 12)
+    belt(-70)
     wait(2, SECONDS)
-    belt1.stop(HOLD)
-    belt2.stop(HOLD)
+    belt_brake()
+
+    auto_drive("fb", 42)
+    belt(-70) #iunno just let it run until autons over?
 
 def device_check():
     if LF.installed() and RF.installed() and LB.installed() and RB.installed():
@@ -38,7 +58,6 @@ def device_check():
         controller.rumble('...')
 
 def user_control():
-    brain.screen.clear_screen()
     pivot.set_timeout(2, SECONDS)
     inert.calibrate()
     device_check()
@@ -86,8 +105,7 @@ def user_control():
         if abs(ax2) > 1:
             belt(ax2)
         else:
-            belt1.stop(HOLD)
-            belt2.stop(HOLD)
+            belt_brake()
 
         if abs(ax3) > 1:
             drive_FB(ax3)

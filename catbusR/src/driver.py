@@ -25,8 +25,12 @@ def drive_rot(spd, type = RPM): #turn left -> all axis values neg, turn right ->
     RB.spin(FORWARD, curve(spd), type)
 
 def belt(spd):
-    belt1.spin(FORWARD, curve(spd))
-    belt2.spin(FORWARD, curve(-spd))
+    belt1.spin(FORWARD, spd)
+    belt2.spin(FORWARD, -spd)
+
+def belt_brake():
+    belt1.stop()
+    belt2.stop()
 
 def brake(type):
     LF.stop(type)
@@ -63,35 +67,33 @@ def switch(n):
     # pivot.stop(HOLD)
     # do i need this
 
-def spin_to_deg(motor, deg, spd, to = 5, tol = 5):
-    dif = deg-motor.position()
-    t = 0
-    motor.spin_for(FORWARD, dif, DEGREES, spd, RPM, True)
-    while math.fabs(dif) > tol and t < to:
-        if motor.position() > deg:
-            motor.spin_for(FORWARD, -dif*0.5, DEGREES, spd, RPM, False)
-        elif motor.position() < deg:
-            motor.spin_for(FORWARD, dif*0.5, DEGREES, spd, RPM, False)
-        wait(50, MSEC)
-        t+=0.05
-        print(dif)
-    motor.stop(BRAKE)
-    print("finished")
+# def spin_to_deg(motor, deg, spd, to = 5, tol = 5):
+#     dif = deg-motor.position()
+#     t = 0
+#     motor.spin_for(dif, spd, True)
+#     while math.fabs(dif) > tol and t < to:
+#         if motor.position() > deg:
+#             motor.spin_for(-dif*0.5, DEGREES, spd)
+#         elif motor.position() < deg:
+#             motor.spin_for(dif*0.5, DEGREES, spd)
+#         wait(50, MSEC)
+#         t+=0.05
+#     motor.stop(BRAKE)
 
-def spin_to_rev(motor, rev, spd, to = 5, tol = 5):
-    dif = rev-motor.position()
-    t = 0
-    motor.spin(FORWARD, spd)
-    while math.fabs(dif) > tol and t < to:
-        if motor.position() > rev:
-            motor.spin(FORWARD, spd*-dif*0.5, RPM, False)
-        elif motor.position() < rev:
-            motor.spin(FORWARD, spd*dif*0.5, RPM, False)
-        wait(50, MSEC)
-        t+=0.05
-    motor.stop(BRAKE)
+# def spin_to_rev(motor, rev, spd, to = 5, tol = 5):
+    # dif = rev-motor.position()
+    # t = 0
+    # motor.spin(FORWARD, spd)
+    # while math.fabs(dif) > tol and t < to:
+    #     if motor.position() > rev:
+    #         motor.spin(FORWARD, spd*-dif*0.5, RPM, False)
+    #     elif motor.position() < rev:
+    #         motor.spin(FORWARD, spd*dif*0.5, RPM, False)
+    #     wait(50, MSEC)
+    #     t+=0.05
+    # motor.stop(BRAKE)
 
-def manual_reset(): # lack of sensors :/
+def manual_reset():
     # manually return to neutral position then activate
     pivot.stop(HOLD)
     table.stop(HOLD)
