@@ -1,4 +1,3 @@
-from vex import *
 from config import *
 
 switch_cnt = 0

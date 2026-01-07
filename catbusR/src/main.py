@@ -9,9 +9,138 @@
 
 # Library imports
 from vex import *
-from driver import *
-from config import *
-from auto import *
+
+# config
+brain = Brain()
+controller = Controller(PRIMARY)
+
+belt1 = Motor(Ports.PORT13)
+belt2 = Motor(Ports.PORT14)
+pivot = Motor(Ports.PORT15)
+table = Motor(Ports.PORT18)
+
+RF = Motor(Ports.PORT19)
+RB = Motor(Ports.PORT12)
+LF = Motor(Ports.PORT20)
+LB = Motor(Ports.PORT11)
+
+inert = Inertial(Ports.PORT10)
+
+# driver
+switch_cnt = 0
+
+def curve(x):
+    return pow(x, 2)/100 * (x/abs(x))
+
+def drive_FB(spd, type = RPM):
+    LF.spin(FORWARD, curve(spd), type)
+    LB.spin(FORWARD, curve(spd), type)
+    RF.spin(FORWARD, curve(-spd), type)
+    RB.spin(FORWARD, curve(-spd), type)
+
+def drive_LR(spd, type = RPM): # test to make sure it isnt inversed. pos should be right & neg should be left
+    LF.spin(FORWARD, curve(spd), type)
+    LB.spin(FORWARD, curve(-spd), type)
+    RF.spin(FORWARD, curve(spd), type)
+    RB.spin(FORWARD, curve(-spd), type)
+
+def drive_rot(spd, type = RPM): #turn left -> all axis values neg, turn right -> all axis values pos
+    LF.spin(FORWARD, curve(spd), type)
+    LB.spin(FORWARD, curve(spd), type)
+    RF.spin(FORWARD, curve(spd), type)
+    RB.spin(FORWARD, curve(spd), type)
+
+def belt(spd):
+    belt1.spin(FORWARD, spd)
+    belt2.spin(FORWARD, -spd)
+
+def belt_brake():
+    belt1.stop()
+    belt2.stop()
+
+def brake(type):
+    LF.stop(type)
+    LB.stop(type)
+    RF.stop(type)
+    RB.stop(type)
+
+def switch(n):
+    global switch_cnt
+    switch_cnt += 1
+    if switch_cnt//2 == switch_cnt/2:
+        coef = 1
+    else:
+        coef = -1
+    # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
+    pivot.spin_to_position(-90, DEGREES, 40, RPM, True) #false = do not wait for completion
+    # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
+    table.spin_to_position(coef*240, DEGREES, 50, RPM, True) #has to be a bit higher RPM than others
+    if n == "dock":
+        if coef == 1:
+            pivot.spin_to_position(0, DEGREES, 40, RPM, True) # spin to position doesnt time out ._.
+            # spin_to(pivot, 0)
+        else:
+            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
+            # spin_to(pivot, -180) 
+    elif n == "end":
+        if coef == 1:
+            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
+            # spin_to(pivot, -180)
+        else:
+            pivot.spin_to_position(0, DEGREES, 40, RPM, True)
+            # spin_to(pivot, 0)
+    table.reset_position()
+    # pivot.stop(HOLD)
+
+def manual_reset():
+    # manually return to neutral position then activate
+    pivot.stop(HOLD)
+    table.stop(HOLD)
+    pivot.reset_position()
+    table.reset_position()
+
+# auto
+posY = 0.0
+posX = 0.0
+
+def auto_drive(dir, pos):
+    if dir == "fb":
+        global posY
+        dif1 = pos-posY
+        dif = dif1
+        while math.fabs(dif) > 0.1:
+            acc_i = .393700787*inert.acceleration(ZAXIS)
+            drive_FB(dif/dif1) # percent of distance incompleted, 
+            wait(10, MSEC)
+            acc_f = .393700787*inert.acceleration(ZAXIS) # convert to in
+            avg_spd = (acc_f-acc_i)/0.01 # find avg rate of change of acc
+            posY += avg_spd*0.01
+            dif = pos-posY
+    elif dir == "lr":
+        global posX
+        dif1 = pos-posX
+        dif = dif1
+        while math.fabs(dif) > 0.1:
+            acc_i = .393700787*inert.acceleration(XAXIS)
+            drive_LR(dif/dif1)
+            wait(10, MSEC)
+            acc_f = .393700787*inert.acceleration(XAXIS)
+            posX += acc_f-acc_i #i guess i literally couldve just simplified it to that whoops
+            dif = pos-posX
+    elif dir == "rot":
+        dif1 = pos-inert.heading()
+        dif = dif1
+        while math.fabs(dif) > 0.1:
+            drive_rot(dif/dif1)
+            wait(10, MSEC)
+            dif = pos-inert.heading()
+    brake(BRAKE)
+    belt_brake()
+    print("LF: ", LF.position(TURNS))
+    print("RF: ", RF.position(TURNS))
+    print("LB: ", LB.position(TURNS))
+    print("RB: ", RB.position(TURNS))
+    wait(500, MSEC)
 
 def autonomous():
     auto_drive("lr", -6)

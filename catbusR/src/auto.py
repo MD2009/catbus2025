@@ -1,4 +1,3 @@
-from vex import *
 from driver import *
 
 posY = 0.0
@@ -37,4 +36,8 @@ def auto_drive(dir, pos):
             dif = pos-inert.heading()
     brake(BRAKE)
     belt_brake()
+    print("LF: ", LF.position(TURNS))
+    print("RF: ", RF.position(TURNS))
+    print("LB: ", LB.position(TURNS))
+    print("RB: ", RB.position(TURNS))
     wait(500, MSEC)
