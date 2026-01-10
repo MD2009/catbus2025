@@ -30,7 +30,7 @@ inert = Inertial(Ports.PORT20)
 switch_cnt = 0
 
 def curve(x):
-    return pow(x, 2)/100 * (x/abs(x))
+    return pow(x, 2)/100 * (x/abs(x)) * 0.5
 
 def drive_FB(spd, type = RPM):
     LF.spin(FORWARD, curve(spd), type)
@@ -204,15 +204,15 @@ def user_control():
             manual_reset()
 
         # manual adjust
-        if controller.buttonL1.pressing():
+        if controller.buttonR1.pressing():
             pivot.spin(FORWARD, 15)
-        elif controller.buttonR1.pressing():
+        elif controller.buttonR2.pressing():
             pivot.spin(FORWARD, -15)
         else:
             pivot.stop(HOLD)
-        if controller.buttonL2.pressing():
+        if controller.buttonL1.pressing():
             table.spin(FORWARD, 75)
-        elif controller.buttonR2.pressing():
+        elif controller.buttonL2.pressing():
             table.spin(FORWARD, -75)
         else:
             table.stop(HOLD)
@@ -236,14 +236,14 @@ def user_control():
         else:
             brake(BRAKE)
         wait(20, MSEC)
-        t += 20
-        if (t/500) == math.floor(t/500):
-            print("curr: ", table.current())
-            print("power: ", table.power())
-            print("torq: ", table.torque())
-            print("eff: ", table.efficiency())
-            print("temp: ", table.temperature())
-            print()
+        # t += 20
+        # if (t/500) == math.floor(t/500):
+        #     print("curr: ", table.current())
+        #     print("power: ", table.power())
+        #     print("torq: ", table.torque())
+        #     print("eff: ", table.efficiency())
+        #     print("temp: ", table.temperature())
+        #     print()
 
 
 # create competition instance
