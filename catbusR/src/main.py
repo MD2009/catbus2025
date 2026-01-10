@@ -90,11 +90,12 @@ posY = 0.0
 posX = 0.0
 
 def auto_drive(dir, pos):
+    t = 0
     if dir == "fb":
         global posY
         dif1 = pos-posY
         dif = dif1
-        while math.fabs(dif) > 0.1:
+        while math.fabs(dif) > 0.1 and t < dif1*0.1: #timeout, abt 10in/sec?
             acc_i = .393700787*inert.acceleration(XAXIS)
             drive_FB((dif/dif1)*100) # percent of distance incompleted, 
             print((dif/dif1)*100)
@@ -103,24 +104,27 @@ def auto_drive(dir, pos):
             avg_spd = (acc_f-acc_i)/0.01 # find avg rate of change of acc
             posY += avg_spd*0.01
             dif = pos-posY
+            t += 0.01
     elif dir == "lr":
         global posX
         dif1 = pos-posX
         dif = dif1
-        while math.fabs(dif) > 0.1:
+        while math.fabs(dif) > 0.1 and t < dif1*0.1:
             acc_i = .393700787*inert.acceleration(ZAXIS)
             drive_LR((dif/dif1)*100)
             wait(10, MSEC)
             acc_f = .393700787*inert.acceleration(ZAXIS)
             posX += acc_f-acc_i #i guess i literally couldve just simplified it to that whoops
             dif = pos-posX
+            t += 0.01
     elif dir == "rot":
         dif1 = pos-inert.heading()
         dif = dif1
-        while math.fabs(dif) > 0.1:
+        while math.fabs(dif) > 0.1 and t < dif1/720: # 2 revs/sec?
             drive_rot((dif/dif1)*100)
             wait(10, MSEC)
             dif = pos-inert.heading()
+            t += 0.01
     brake(BRAKE)
     belt_brake()
     wait(500, MSEC)
