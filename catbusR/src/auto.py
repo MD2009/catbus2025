@@ -4,11 +4,15 @@ posY = 0.0
 posX = 0.0
 
 def auto_drive(dir, pos):
+    brain.screen.print("checkpoint0")
     if dir == "fb":
+        brain.screen.print("checkpoint1")
         global posY
         dif1 = pos-posY
         dif = dif1
+        brain.screen.print("posY: ", posY)
         while math.fabs(dif) > 0.1:
+            brain.screen.print("checkpoint2")
             acc_i = .393700787*inert.acceleration(ZAXIS)
             drive_FB(dif/dif1) # percent of distance incompleted, 
             wait(10, MSEC)
@@ -34,6 +38,7 @@ def auto_drive(dir, pos):
             drive_rot(dif/dif1)
             wait(10, MSEC)
             dif = pos-inert.heading()
+    brain.screen.print("checkpoint3")
     brake(BRAKE)
     belt_brake()
     print("LF: ", LF.position(TURNS))

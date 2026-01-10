@@ -1,7 +1,5 @@
 from config import *
 
-switch_cnt = 0
-
 def curve(x):
     return pow(x, 2)/100 * (x/abs(x))
 
@@ -38,33 +36,15 @@ def brake(type):
     RB.stop(type)
 
 def switch(n):
-    global switch_cnt
-    switch_cnt += 1
-    if switch_cnt//2 == switch_cnt/2:
-        coef = 1
-    else:
-        coef = -1
     # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
-    pivot.spin_to_position(-90, DEGREES, 40, RPM, True) #false = do not wait for completion
+    pivot.spin_to_position(-90, 40, RPM)
     # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
-    table.spin_to_position(coef*240, DEGREES, 50, RPM, True) #has to be a bit higher RPM than others
+    table.spin_to_position(450, 50, RPM)
     if n == "dock":
-        if coef == 1:
-            pivot.spin_to_position(0, DEGREES, 40, RPM, True) # spin to position doesnt time out ._.
-            # spin_to(pivot, 0)
-        else:
-            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
-            # spin_to(pivot, -180) 
+        pivot.spin_to_position(0, DEGREES, 40, RPM, False)
     elif n == "end":
-        if coef == 1:
-            pivot.spin_to_position(-180, DEGREES, 40, RPM, True)
-            # spin_to(pivot, -180)
-        else:
-            pivot.spin_to_position(0, DEGREES, 40, RPM, True)
-            # spin_to(pivot, 0)
+        pivot.spin_to_position(180, DEGREES, 40, RPM, False)
     table.reset_position()
-    # pivot.stop(HOLD)
-    # do i need this
 
 # def spin_to_deg(motor, deg, spd, to = 5, tol = 5):
 #     dif = deg-motor.position()
