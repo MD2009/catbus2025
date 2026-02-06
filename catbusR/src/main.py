@@ -25,30 +25,20 @@ LF = Motor(Ports.PORT18)
 LB = Motor(Ports.PORT17)
 
 inert = Inertial(Ports.PORT20)
+dock1 = Bumper(Ports.PORT)
+dock2 = Bumper(Ports.PORT)
 
 # driver
 switch_cnt = 0
 
 def curve(x):
-    return pow(x, 2)/100 * (x/abs(x)) * 0.5
+    return pow(x, 2)/100 * (x/abs(x)) * 0.25
 
-def drive_FB(spd, type = RPM):
-    LF.spin(FORWARD, curve(spd), type)
-    LB.spin(FORWARD, curve(spd), type)
-    RF.spin(FORWARD, curve(-spd), type)
-    RB.spin(FORWARD, curve(-spd), type)
-
-def drive_LR(spd, type = RPM): # test to make sure it isnt inversed. pos should be right & neg should be left
-    LF.spin(FORWARD, curve(spd), type)
-    LB.spin(FORWARD, curve(-spd), type)
-    RF.spin(FORWARD, curve(spd), type)
-    RB.spin(FORWARD, curve(-spd), type)
-
-def drive_rot(spd, type = RPM): #turn left -> all axis values neg, turn right -> all axis values pos
-    LF.spin(FORWARD, curve(spd), type)
-    LB.spin(FORWARD, curve(spd), type)
-    RF.spin(FORWARD, curve(spd), type)
-    RB.spin(FORWARD, curve(spd), type)
+def drive(spdR, spdL, type = RPM):
+    LF.spin(FORWARD, curve(spdL), type)
+    LB.spin(FORWARD, curve(-spdL), type)
+    RF.spin(FORWARD, curve(spdR), type)
+    RB.spin(FORWARD, curve(-spdR), type)
 
 def belt(spd):
     belt1.spin(FORWARD, spd)
@@ -68,14 +58,15 @@ def switch(n):
     # full rotation = 180, half = 90, a lot more accurate now w/ high srth axle & motor
     pivot.spin_to_position(-90, DEGREES, 40, RPM)
     # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on right side
+    # for 3:7 ratio
     if n == 0: # dock
-        table.spin_to_position(1260, DEGREES, 75, RPM)
+        table.spin_to_position(420, DEGREES, 75, RPM)
         pivot.spin_to_position(0, DEGREES, 40, RPM)
     elif n == 1: # end
-        table.spin_to_position(1260, DEGREES, 75, RPM)
+        table.spin_to_position(420, DEGREES, 75, RPM)
         pivot.spin_to_position(180, DEGREES, 40, RPM)
     elif n == 2: # park
-        table.spin_to_position(630, DEGREES, 75, RPM)
+        table.spin_to_position(210, DEGREES, 75, RPM)
     table.reset_position()
 
 def manual_reset():
@@ -89,53 +80,57 @@ def manual_reset():
 posY = 0.0
 posX = 0.0
 
-def auto_drive(dir, pos):
-    t = 0
-    if dir == "fb":
-        global posY
-        dif1 = pos-posY
-        dif = dif1
-        while math.fabs(dif) > 0.1 and t < dif1*0.1: #timeout, abt 10in/sec?
-            acc_i = .393700787*inert.acceleration(XAXIS)
-            drive_FB((dif/dif1)*100) # percent of distance incompleted, 
-            print((dif/dif1)*100)
-            wait(10, MSEC)
-            acc_f = .393700787*inert.acceleration(XAXIS) # convert to in
-            avg_spd = (acc_f-acc_i)/0.01 # find avg rate of change of acc
-            posY += avg_spd*0.01
-            dif = pos-posY
-            t += 0.01
-    elif dir == "lr":
-        global posX
-        dif1 = pos-posX
-        dif = dif1
-        while math.fabs(dif) > 0.1 and t < dif1*0.1:
-            acc_i = .393700787*inert.acceleration(ZAXIS)
-            drive_LR((dif/dif1)*100)
-            wait(10, MSEC)
-            acc_f = .393700787*inert.acceleration(ZAXIS)
-            posX += acc_f-acc_i #i guess i literally couldve just simplified it to that whoops
-            dif = pos-posX
-            t += 0.01
-    elif dir == "rot":
-        dif1 = pos-inert.heading()
-        dif = dif1
-        while math.fabs(dif) > 0.1 and t < dif1/720: # 2 revs/sec?
-            drive_rot((dif/dif1)*100)
-            wait(10, MSEC)
-            dif = pos-inert.heading()
-            t += 0.01
-    brake(BRAKE)
-    belt_brake()
-    wait(500, MSEC)
+# def auto_drive(dir, pos):
+#     t = 0
+#     if dir == "fb":
+#         global posY
+#         dif1 = pos-posY
+#         dif = dif1
+#         while math.fabs(dif) > 0.1 and t < dif1/24: #timeout, abt 24in/sec?
+#             acc_i = .393700787*inert.acceleration(XAXIS)
+#             drive_FB((dif/dif1)*100) # percent of distance incompleted, 
+#             print((dif/dif1)*100)
+#             wait(10, MSEC)
+#             acc_f = .393700787*inert.acceleration(XAXIS) # convert to in
+#             avg_spd = (acc_f-acc_i)/0.01 # find avg rate of change of acc
+#             posY += avg_spd*0.01
+#             dif = pos-posY
+#             t += 0.01
+#     elif dir == "lr":
+#         global posX
+#         dif1 = pos-posX
+#         dif = dif1
+#         while math.fabs(dif) > 0.1 and t < dif1/24:
+#             acc_i = .393700787*inert.acceleration(ZAXIS)
+#             drive_LR((dif/dif1)*100)
+#             wait(10, MSEC)
+#             acc_f = .393700787*inert.acceleration(ZAXIS)
+#             posX += acc_f-acc_i #i guess i literally couldve just simplified it to that whoops
+#             dif = pos-posX
+#             t += 0.01
+#     elif dir == "rot":
+#         dif1 = pos-inert.heading()
+#         dif = dif1
+#         while math.fabs(dif) > 0.1 and t < dif1/720: # 2 revs/sec?
+#             drive_rot((dif/dif1)*100)
+#             wait(10, MSEC)
+#             dif = pos-inert.heading()
+#             t += 0.01
+#     brake(BRAKE)
+#     belt_brake()
+#     wait(500, MSEC)
 
 def autonomous():
-    auto_drive("lr", -50)  # left by a chunk of range
-    auto_drive("fb", 35)  # forward by a chunk of range
-    belt(-70)  # who knows, just dump
-    wait(900, MSEC)  # wait
-    belt_brake()
-    wait(1500, MSEC)  # score!
+    auto_drive("fb", 24)
+    auto_drive("lr", -28)
+    auto_drive("fb", 15)
+    belt(-70)
+    # auto_drive("lr", -50)  # left by a chunk of range
+    # auto_drive("fb", 35)  # forward by a chunk of range
+    # belt(-70)  # who knows, just dump
+    # wait(900, MSEC)  # wait
+    # belt_brake()
+    # wait(1500, MSEC)  # score!
 
 def autonomous_old():
     auto_drive("lr", -6)
@@ -183,14 +178,10 @@ def device_check():
 
 def user_control():
     pivot.set_timeout(2, SECONDS)
-    inert.calibrate()
-    wait(2000,MSEC)
     device_check()
-    ax1 = 0
     ax2 = 0
     ax3 = 0
-    ax4 = 0
-    t = 0
+    table_tog = 0
     # place driver control in this while loop
     while True:
         # action hotkeys
@@ -198,14 +189,14 @@ def user_control():
             switch(0)
         if controller.buttonA.pressing():
             switch(1)
-        if controller.buttonUp.pressing():
+        if controller.buttonY.pressing():
             switch(2)
-        if controller.buttonB.pressing():
-            auto_drive("fb", 10)
 
         # control
         if controller.buttonLeft.pressing():
             manual_reset()
+        if controller.buttonUp.pressing():
+            table_tog += 1
 
         # manual adjust
         if controller.buttonR1.pressing():
@@ -215,28 +206,24 @@ def user_control():
         else:
             pivot.stop(HOLD)
         if controller.buttonL1.pressing():
-            table.spin(FORWARD, 75)
+            if (table_tog/2) - math.floor(table_tog/2) > 0:
+                table.spin(FORWARD, 100)
+            else:
+                belt(75)
         elif controller.buttonL2.pressing():
-            table.spin(FORWARD, -75)
-        else:
-            table.stop(HOLD)
-
-        ax1 = controller.axis1.position()
-        ax2 = controller.axis2.position()
-        ax3 = controller.axis3.position()
-        ax4 = controller.axis4.position()
-
-        if abs(ax2) > 1:
-            belt(ax2)
+            if (table_tog/2) - math.floor(table_tog/2) > 0:
+                table.spin(FORWARD, -100)
+            else:
+                belt(-75)
         else:
             belt_brake()
+            table.stop(HOLD)
 
-        if abs(ax3) > 5:
-            drive_FB(ax3)
-        elif abs(ax4) > 1:
-            drive_LR(ax4)
-        elif abs(ax1) > 1:
-            drive_rot(ax1)
+        ax3 = controller.axis3.position()
+        ax2 = controller.axis2.position()
+
+        if abs(ax3) > 2 or abs(ax2) > 2:
+            drive(ax3, ax2)
         else:
             brake(BRAKE)
         wait(20, MSEC)
