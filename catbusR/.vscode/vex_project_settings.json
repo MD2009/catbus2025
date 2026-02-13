@@ -4,12 +4,12 @@
 		"json": 2
 	},
 	"project": {
-		"name": "catbusLA",
+		"name": "catbus",
 		"description": "",
 		"creationDate": "11/12/2025, 9:09:29 AM",
 		"platform": "V5",
 		"language": "python",
-		"slot": 1,
+		"slot": 3,
 		"sdkVersion": "V5_1_0_1_25",
 		"python": {
 			"main": "src/main.py"

@@ -37,7 +37,6 @@ def drive(Rspd, Lspd, type):
     LB.spin(FORWARD, -Lspd, type)
     RF.spin(FORWARD, Rspd, type)
     RB.spin(FORWARD, Rspd, type)
-    print((3.25*(-LB.position() - LF.position() + RB.position() + RF.position())) / (4*360))
 
 def belt(spd):
     belt1.spin(FORWARD, spd)
@@ -61,7 +60,7 @@ def switch(n):
     global switch_cnt
     if dock1.pressing():
         save = True
-    elif dock2.pressing():
+    else:
         save = False
     pivot.spin_to_position(135)
     # spin_to(pivot, -90) #starting pos must be w brain on right side & pivot motor on left side
@@ -74,7 +73,7 @@ def switch(n):
             else:
                 pivot.spin(REVERSE, 40*switch_cnt)
             wait(20, MSEC)
-            t += 0.01
+            t += 0.02
         pivot.stop()
     elif n == 1: # end
         table.spin_to_position(420*switch_cnt)
@@ -84,7 +83,7 @@ def switch(n):
             else:
                 pivot.spin(FORWARD, 40*switch_cnt)
             wait(20, MSEC)
-            t += 0.01
+            t += 0.02
         pivot.stop()
     elif n == 2: # park
         table.spin_to_position(105)
@@ -95,7 +94,7 @@ def switch(n):
         while not dock1.pressing() and not dock2.pressing() and t < 2:
             pivot.spin(FORWARD)
             wait(10, MSEC)
-            t += 0.01
+            t += 0.02
         pivot.stop()
     table.reset_position()
     if switch_cnt > 0:
@@ -169,16 +168,30 @@ def manual_reset():
 #         wait(100, MSEC)
 #     wait(300, MSEC)
 
-def auto_drive():
-    
+def auto_drive(target, spd):
+    drive(spd, spd, RPM)
+    wait((target/10.21)/(abs(spd)/60), SECONDS)
+    brake(BRAKE)
+    wait(100, MSEC)
+
+def auto_turn(target, spd):
+    diff1 = target - inert.rotation()
+    diff = diff1
+    while abs(diff) > 3:
+        drive(-(diff/diff1)*spd, (diff/diff1)*spd, RPM)
+        diff = target - inert.rotation()
+        wait(20, MSEC)
+    wait(100, MSEC)
 
 def autonomous():
-    # auto_drive(36, 40)
-    # auto_turn(-90, 80)
+    auto_drive(3, 70)
+    # auto_drive(-36, 70)
+    # auto_turn(-90, 60)
+    # pivot.spin_to_position(50)
     # auto_drive(-20, 60)
-    # belt(80)
-    wait(5, SECONDS)
-    belt_brake()
+    # belt(-80)
+    # wait(5, SECONDS)
+    # belt_brake()
     
 def device_check():
     if LF.installed() and RF.installed() and LB.installed() and RB.installed():
@@ -196,9 +209,10 @@ controller.buttonUp.pressed(test)
 
 def user_control():
     global table_t
-    table.set_velocity(75, RPM)
+    table.set_velocity(80, RPM)
     table.set_timeout(3, SECONDS)
     pivot.set_velocity(40, RPM)
+    inert.calibrate()
     device_check()
     # place driver control in this while loop
     while True:
@@ -244,17 +258,10 @@ def user_control():
 
         if abs(ax3) > 1 or abs(ax2) > 1:
             drive(ax2, ax3, RPM)
+            print(ax3)
         else:
             brake(BRAKE)
         wait(20, MSEC)
-        # t += 20
-        # if (t/500) == math.floor(t/500):
-        #     print("curr: ", table.current())
-        #     print("power: ", table.power())
-        #     print("torq: ", table.torque())
-        #     print("eff: ", table.efficiency())
-        #     print("temp: ", table.temperature())
-        #     print()
 
 
 # create competition instance
