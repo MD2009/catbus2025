@@ -116,15 +116,17 @@ def manual_reset():
 #     RF.reset_position()
 #     # gains for pct/in although percent of 100 rpm literally is just rpm huh
 #     p_g = 6
-#     i_g = 0.01
-#     d_g = 3.44
+#     i_g = 0.001
+#     d_g = 0 # 3.44
     
 #     i = 0
 #     err = target
 #     p_err = target
 #     while abs(err) > 0.1:
-#         curr = 3.25*RB.position(TURNS)
-#         err = target - curr
+#         curr = 10.21*RB.position(TURNS)*(5/3)
+#         err = target - curr 
+
+
 #         p = p_g*err
 #         i += i_g*err*100
 #         d = d_g*(err-p_err) / 100
@@ -132,9 +134,9 @@ def manual_reset():
 #         p_err = err
 #         spd = p + i + d
 #         if abs(spd) > max:
-#             drive(max, max, RPM)
+#             drive(-max, -max, RPM)
 #         else:
-#             drive(spd, spd, PERCENT)
+#             drive(-spd, -spd, PERCENT)
 
 #         print("Current: ", curr)
 #         print("Error: ", err)
@@ -142,37 +144,47 @@ def manual_reset():
 #         wait(100, MSEC)
 #     wait(300, MSEC)
 
-# def auto_turn(target, max = 100):
-#     inert.reset_rotation()
-#     # gains for pct/in
-#     p_g = 0.3
-#     i_g = 0
-#     d_g = 0.15
+def auto_turn(target, max = 100):
+    inert.reset_rotation()
+    # gains for pct/in
+    p_g = 0.3
+    i_g = 0
+    d_g = 0.15
 
-#     err = target
-#     p_err = target
-#     while abs(err) > 0.1:
-#         curr = inert.rotation()
-#         err = target - curr
-#         p = p_g*err
-#         i += i_g*err*100
-#         d = d_g*(err-p_err) / 100
+    i = 0
+    err = target
+    p_err = target
+    while abs(err) > 1:
+        curr = inert.rotation()
+        print(curr)
+        err = target - curr
+        p = p_g*err
+        i += i_g*err*100
+        d = d_g*(err-p_err) / 100
 
-#         p_err = err
-#         spd = p + i + d
-#         if spd > max:
-#             drive(-max, max, RPM)
-#         else:
-#             drive(-spd, spd, PERCENT)
+        p_err = err
+        spd = p + i + d
+        if spd > max:
+            drive(-max, max, RPM)
+        else:
+            drive(-spd, spd, PERCENT)
 
-#         wait(100, MSEC)
-#     wait(300, MSEC)
+        wait(100, MSEC)
+    wait(300, MSEC)
 
-def auto_drive(target, spd):
+def auto_drive(target, spd): # motor readings kinda suck :[
     drive(spd, spd, RPM)
+    print((target/10.21)/(abs(spd)*(5/3)/60))
     wait((target/10.21)/(abs(spd)/60), SECONDS)
     brake(BRAKE)
     wait(100, MSEC)
+    # diff1 = target - 10.21*LB.position(TURNS)*(5/3)
+    # diff = diff1
+    # while abs(diff) > 3:
+    #     drive((diff/diff1)*spd, (diff/diff1)*spd, RPM)
+    #     diff = target - 10.21*LB.position(TURNS)*(5/3)
+    #     wait(20, MSEC)
+    # wait(100, MSEC)
 
 def auto_turn(target, spd):
     diff1 = target - inert.rotation()
@@ -184,14 +196,15 @@ def auto_turn(target, spd):
     wait(100, MSEC)
 
 def autonomous():
-    auto_drive(3, 70)
-    # auto_drive(-36, 70)
-    # auto_turn(-90, 60)
-    # pivot.spin_to_position(50)
-    # auto_drive(-20, 60)
-    # belt(-80)
-    # wait(5, SECONDS)
-    # belt_brake()
+    # auto_drive(3, 70)
+    auto_drive(36, -70)
+    auto_turn(90, 60)
+    pivot.spin_to_position(50)
+    auto_drive(20, -60)
+    belt(-120)
+    wait(5, SECONDS)
+    belt_brake()
+    wait(100, MSEC)
     
 def device_check():
     if LF.installed() and RF.installed() and LB.installed() and RB.installed():
@@ -243,12 +256,12 @@ def user_control():
             if (table_t/2) - math.floor(table_t/2) > 0:
                 table.spin(FORWARD)
             else:
-                belt(100)
+                belt(120)
         elif controller.buttonL2.pressing():
             if (table_t/2) - math.floor(table_t/2) > 0:
                 table.spin(REVERSE)
             else:
-                belt(-100)
+                belt(-120)
         else:
             belt_brake()
             table.stop(HOLD)
